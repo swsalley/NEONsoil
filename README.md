@@ -24,4 +24,4 @@ For more information on the initial soil characterization follow these links at 
 For each NEON site, reports were also completed by NRCS soil scientists based on the initial soil characterization of the Megapits and Distributed plots. Those reports, along with complete soil morphology, can be viewed for each NEON site at the NEON data portal under the [Soil Characterization Summaries](https://data.neonscience.org/en/documents/-/document_library_display/JEygRkSpUBoq/view/2361410).
 
 A site map of the [Barrow Environmental Observatory](https://www.neonscience.org/field-sites/field-sites-map/BARR) near Barrow, Alaska showing location of the distrbuted plots and tower 'mega pit' plot.
-![sitemap](https://github.com/swsalley/NEONsoil/blob/master/BARR-site-map.JPG)
+![sitemap](https://github.com/swsalley/NEONsoil/blob/master/BARR-site-map.JPG) 
