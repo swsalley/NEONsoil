@@ -12,14 +12,16 @@ In addition to the NEON megapit, NRCS further collected soil pit samples from a 
 
 For more information on the initial soil characterization follow these links at [data.neonscience.org](https://data.neonscience.org/home)
 
-- Initial Characterization of the NEON megapit:
-  -- [soil physical properties](https://data.neonscience.org/data-product-view?dpCode=DP1.00096.001) 
-  -- [soil chemical properties](https://data.neonscience.org/data-product-view?dpCode=DP1.00097.001)
-- Initial Characterization of the NEON distributed plots 
-  -- [soil physical properties](https://data.neonscience.org/data-product-view?dpCode=DP1.10047.001) 
-  -- [soil chemical properties](https://data.neonscience.org/data-product-view?dpCode=DP1.10008.001)
+- Initial Characterization of the NEON:
+  - Megapit soil [physical properties](https://data.neonscience.org/data-product-view?dpCode=DP1.00096.001) 
+  - Megapit soil [chemical properties](https://data.neonscience.org/data-product-view?dpCode=DP1.00097.001)
+- Initial Characterization of the NEON: 
+  - Distributed plot soil [physical properties](https://data.neonscience.org/data-product-view?dpCode=DP1.10047.001) 
+  - Distributed plot soil [chemical properties](https://data.neonscience.org/data-product-view?dpCode=DP1.10008.001)
 
 ## Site Summaries
 
-For each NEON site, reports were also completed by NRCS collaborators based on the initial soil characterization of the Megapits and Distributed plots. Those reports, along with complete soil morphology, can be viewed for each NEON site at the [NEON data portal](https://data.neonscience.org/en/documents/-/document_library_display/JEygRkSpUBoq/view/2361410).
+For each NEON site, reports were also completed by NRCS soil scientists based on the initial soil characterization of the Megapits and Distributed plots. Those reports, along with complete soil morphology, can be viewed for each NEON site at the NEON data portal under the [Soil Characterization Summaries](https://data.neonscience.org/en/documents/-/document_library_display/JEygRkSpUBoq/view/2361410).
 
+A site map of the [Barrow Environmental Observatory](https://www.neonscience.org/field-sites/field-sites-map/BARR) near Barrow, Alaska showing location of the distrbuted plots and tower 'mega pit' plot.
+![sitemap](https://github.com/swsalley/NEONsoil/blob/master/BARR-site-map.JPG)
