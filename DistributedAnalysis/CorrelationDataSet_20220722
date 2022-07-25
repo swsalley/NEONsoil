@@ -1,6 +1,6 @@
 # NEON network soils data to quantify soil variability
 #
-# File: CorrelationDataSet_20220722.R
+# File: CorrelationDataSet_20220725.R
 # Output: Neon_Soil_All20220721.csv
 #
 # Description: This file downloads NEON soil megapit and distributed plot data 
@@ -242,8 +242,8 @@ site.all$chem.site.loc.ste <- site.all$chem.site.loc.sd / site.all$n
 
 # plot.all is the summary statistics for plot level data
 setwd("E:/Publications/NEON/R")
-write.csv(site.all, "Neon_Plot_All20220722.csv")
-
+colnames(plot.all)[1] <- "plotID"
+write.csv(plot.all, "Neon_Plot_All20220722.csv")
 
 # site.all is the summary statistics for site level data
 setwd("E:/Publications/NEON/R")
