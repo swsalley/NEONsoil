@@ -1,0 +1,114 @@
+# NEON network soils data to quantify soil variability
+#
+# File: ModelingDataSet_20220727.R
+# Output: Neon_Soil_All20220727.csv
+#
+# Description: This file downloads NEON soil megapit and distributed plot data 
+#  to generate a modeling dataset for analysis of megapits and disturted plots.
+#
+# Author: S.W. Salley, shawn.salley@usda.gov
+#
+
+# Libraries
+library(neonUtilities) # add version for control compatibility 
+library(dplyr)
+library(aqp)
+library(corrplot)
+library(reshape2)
+
+## Download Soil Characterization Data (distributed and Initial) ####
+NEON.DP1.10047 <- loadByProduct(dpID="DP1.10047.001", site="all", package="expanded", release="RELEASE-2022") #Soil physical properties (Distributed initial characterization)
+# Answer = Y
+NEON.DP1.00096 <- loadByProduct(dpID="DP1.00096.001", site="all", package="expanded", release="RELEASE-2022") #Mega PIT Soil physical properties
+# Answer = Y
+
+# Soil Physical Properties of the MegaPit and Distributed Plots ####
+spc_particlesize <- NEON.DP1.10047$spc_particlesize
+spc_particlesize$coarseFrag2To20 <- (spc_particlesize$coarseFrag2To5 + spc_particlesize$coarseFrag5To20) / 10 # converted to %
+all_particlesize <- spc_particlesize %>% select("siteID", "plotID", "horizonID", "horizonName", 
+                                                "biogeoTopDepth", "biogeoBottomDepth", "sandTotal", 
+                                                "siltTotal", "clayTotal", "coarseFrag2To20")
+# With Mega Pit
+mega_particlesize <- NEON.DP1.00096$mgp_perbiogeosample
+mega_particlesize$coarseFrag2To20 <- (mega_particlesize$coarseFrag2To5 + mega_particlesize$coarseFrag5To20) / 10 # converted to %
+mega_particlesize <- mega_particlesize %>% select("siteID", "pitID", "horizonID", "horizonName", 
+                                                "biogeoTopDepth", "biogeoBottomDepth", "sandTotal", 
+                                                "siltTotal", "clayTotal", "coarseFrag2To20")
+colnames(mega_particlesize)[2] <- "plotID"
+mega_particlesize$plotID <- paste0(mega_particlesize$siteID, "_mp") #rename to merge w/ distributed
+all_particlesize <- rbind(all_particlesize, mega_particlesize) # 3359
+nrow(all_particlesize) #3365
+# clean up
+all_particlesize <- all_particlesize[!is.na(all_particlesize$biogeoTopDepth),] # 3348
+all_particlesize <- all_particlesize %>% filter(biogeoTopDepth < 100)        # 3217
+all_particlesize$biogeoBottomDepth[all_particlesize$biogeoBottomDepth > 100] <- 100 #3217
+#
+
+# Soil chemical Properties of Distributed Plots ####
+spc_biogeochem <- NEON.DP1.10047$spc_biogeochem
+spc_biogeochem <- spc_biogeochem %>% select("siteID", "plotID", "horizonID", "horizonName", 
+                                            "biogeoTopDepth", "biogeoBottomDepth", "cecdNh4",
+                                            "phCacl2","ec12pre","carbonTot","nitrogenTot", "sulfurTot")
+
+# With Mega Pit
+mega_biogeochem <- NEON.DP1.00096$mgp_perbiogeosample
+mega_biogeochem <- mega_biogeochem %>% select("siteID", "pitID", "horizonID", "horizonName", 
+                                              "biogeoTopDepth", "biogeoBottomDepth", "cecdNh4",
+                                              "phCacl2","ec12pre","carbonTot","nitrogenTot", "sulfurTot")
+colnames(mega_biogeochem)[2] <- "plotID"
+mega_biogeochem$plotID <- paste0(mega_biogeochem$siteID, "_mp") #rename to merge w/ distributed
+all_biogeochem <- rbind(spc_biogeochem, mega_biogeochem) # 3359
+
+# clean up 
+nrow(all_biogeochem) #3364
+all_biogeochem <- all_biogeochem[!is.na(all_biogeochem$biogeoTopDepth),] # 3354
+all_biogeochem <- all_biogeochem %>% filter(biogeoTopDepth < 100)        # 3221
+all_biogeochem$biogeoBottomDepth[all_biogeochem$biogeoBottomDepth > 100] <- 100 #3221
+
+# Combine ####
+all_biogeochem <- all_biogeochem[order(all_biogeochem$plotID, all_biogeochem$biogeoTopDepth,  all_biogeochem$horizonID),]
+all_particlesize <- all_particlesize[order(all_particlesize$plotID, all_particlesize$biogeoTopDepth, all_particlesize$horizonID),]
+#
+nrow(all_biogeochem) #3221
+nrow(all_particlesize) #3221
+#
+soil.all <- cbind(all_particlesize[1:10], all_biogeochem[c(7:12)])
+nrow(soil.all) #3221
+soil.all$id <- c(1:3221)
+#
+
+#### Multiple horizons in same depth range ####
+#
+# BARR_001, 56-100cm, drop 18N05555; 
+# KONA_mp x5 take first; 
+# KONZ_mp x2, take first; 
+# ORNL_mp x2 take first
+# PUUM_mp x2 take first, drop D20_PUUM_PIT1_OE; c
+# RMNP_mp, x2 take first (78.1 sand); c
+# SERC_mp 75-85 x2, take first; c
+# SJER_030 13-46, take first; c
+# TEAK_mp, 0-19, 79.7 sand, c
+# TOOL_017, 17-38 x2 take second (Bwjj); c
+# TOOL_072, 20-35 x2, drop 19N00278 c
+# TREE_mp, 66-107 x2, take first; c
+# UNDE_mp, 0-8x2. take second (carbon outlier);
+# WREF_mp, 9-50 x5, take first
+
+
+# this one works for release="RELEASE-2022"
+drop.id = c(80, 1355:1358, 1414, 1977, 2083, 2144, 2338, 2374, 2771, 2735:2738, 2824, 2899, 3040, 3167:3170)
+
+
+soil.all<- soil.all %>% filter(!id %in% drop.id) 
+nrow(soil.all) # 3198 (previous download (provisional?) : 3221)
+
+# test for duplicates
+df1 <- soil.all %>% group_by(plotID, biogeoTopDepth) %>% count(biogeoTopDepth)
+df1[df1$n > 1,] #yes, it works, .20220727
+
+
+# soil.all is the modeling dataset. 
+setwd("E:/Publications/NEON/R")
+write.csv(soil.all, "Neon_Soil_All20220727.csv")
+
+#### end ####
