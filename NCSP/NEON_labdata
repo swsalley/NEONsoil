@@ -4,8 +4,10 @@
 
 library(neonUtilities) 
 library(dplyr)
+library(aqp)
 
 ## Download Soil Characterization Data (distributed and Initial) ####
+
 # these are from the 2022 release, rest of the data might be available in 2023
 
 NEON.DP1.10047 <- loadByProduct(dpID="DP1.10047.001", site="all", package="expanded", release="RELEASE-2022") # Distributed Plots
@@ -13,21 +15,19 @@ NEON.DP1.10047 <- loadByProduct(dpID="DP1.10047.001", site="all", package="expan
 NEON.DP1.00096 <- loadByProduct(dpID="DP1.00096.001", site="all", package="expanded", release="RELEASE-2022") # Mega Pits 
 # Answer = Y
 
-# Cleaned Distributed Plots SPC
+
+#  Distributed Plots SPC
 spc_perplot <- NEON.DP1.10047$spc_perplot
-spc_perplot <- spc_perplot %>% select("domainID", "siteID", "plotID", "pitID", "namedLocation", "plotType","nlcdClass", "geodeticDatum", 
-                                      "decimalLatitude", "decimalLongitude","coordinateUncertainty", "elevation", 
-                                       "collectDate",   "soilSamplingMethod", "sampleRelativeLocation", "pitDepth", "nrcsDescriptionID", 
-                                      "soilSeries",  "soilFamily", "soilSubgroup", "soilGreatGroup", "soilSuborder",  "soilOrder")
+spc_perplot <- spc_perplot %>% select("domainID", "siteID", "plotID",  "plotType", "nrcsDescriptionID", 
+                                      "decimalLatitude", "decimalLongitude", "elevation", "collectDate", "soilSamplingMethod", 
+                                      "pitDepth", "soilSeries",  "soilFamily", "soilSubgroup", "soilGreatGroup", "soilSuborder",  "soilOrder")
 
 spc_perhorizon <- NEON.DP1.10047$spc_perhorizon
-spc_perhorizon <- spc_perhorizon %>% select("domainID", "siteID", "plotID", "pitID", "collectDate", "nrcsDescriptionID",
+spc_perhorizon <- spc_perhorizon %>% select("domainID", "siteID", "plotID", "collectDate", "nrcsDescriptionID",
                                             "horizonID", "horizonName", "horizonTopDepth", "horizonBottomDepth", "remarks")
 
 spc_bulkdensity <- NEON.DP1.10047$spc_bulkdensity
-spc_bulkdensity <- spc_bulkdensity %>% select("horizonID", "bulkDensSampleType", "bulkDensCenterDepth", "bulkDensTopDepth",
-                                              "bulkDensBottomDepth", "bulkDensThirdBar", "bulkDensOvenDry", "bulkDensFieldMoist", 
-                                              "waterRetentionThirdBar", "fieldWaterContent", "remarks")
+spc_bulkdensity <- spc_bulkdensity %>% select("horizonID", "bulkDensSampleType", "bulkDensSampleType",  "bulkDensOvenDry", "remarks")
   
 spc_particlesize <- NEON.DP1.10047$spc_particlesize
 spc_particlesize <- spc_particlesize %>% select("horizonID", "coarseFrag2To5", "coarseFrag5To20", "sandTotal", "siltTotal", 
@@ -36,44 +36,78 @@ spc_particlesize <- spc_particlesize %>% select("horizonID", "coarseFrag2To5", "
                                                 "sandMediumContent", "sandCoarseContent", "sandVeryCoarseContent")
 
 spc_biogeochem <- NEON.DP1.10047$spc_biogeochem
-spc_biogeochem <- spc_biogeochem %>% select("horizonID",  "airDryOvenDryRatio",  "gypsumConc", "caco3Conc", "caNh4d", "kNh4d", 
-                                            "mgNh4d", "naNh4d", "cecdNh4", "alSatCecd33", "baseSumCecd10", "bsesatCecd10", 
-                                            "ececCecd33", "alKcl", "feKcl", "mnKcl", "phCacl2", "phH2o", "ec12pre",
-                                            "bSatx", "brSatx", "caSatx", "clSatx", "co3Satx", "ecSatp", "flSatx", 
-                                            "waterSatx", "hco3Sx", "kSatx", "mgSatx", "naSatx", "no2Satx", "no3Satx", "pSatx", "phSp",
-                                            "so4Satx", "carbonTot", "nitrogenTot", "ctonRatio", "estimatedOC", "sulfurTot", 
-                                            "alOxalate", "feOxalate", "mnOxalate", "pOxalate", "siOxalate", "optDensityOxalate",
-                                            "alCitDithionate", "feCitDithionate", "mnCitDithionate", "siliconCitrateDithionate", 
-                                            "acidity", "waterRetention15Bar", "MehlichIIITotP", "Bray1PExtractable", 
-                                            "OlsenPExtractable", "archiveID", "archiveMass", "processingRemarks")  
+spc_biogeochem <- spc_biogeochem %>% select("horizonID", "airDryOvenDryRatio", "carbonTot", "nitrogenTot", "sulfurTot", "estimatedOC", "gypsumConc", "caco3Conc", "caNh4d", "kNh4d", 
+                                            "phCacl2", "phH2o", "ec12pre", "mgNh4d", "naNh4d", "cecdNh4", "alSatCecd33", "baseSumCecd10", "bsesatCecd10", 
+                                            "ececCecd33", "alKcl", "feKcl", "mnKcl", "bSatx", "brSatx", "caSatx", "clSatx", "co3Satx", "ecSatp", "flSatx", 
+                                            "waterSatx", "hco3Sx", "kSatx", "mgSatx", "naSatx", "no2Satx", "no3Satx", "pSatx", "phSp","so4Satx", "processingRemarks") 
 
-# Cleaned Mega Pit SPC
+# Mega Pits MGP
+
 mgp_permegapit <- NEON.DP1.00096$mgp_permegapit
-mgp_permegapit <- mgp_permegapit %>% select("domainID", "siteID", "pitNamedLocation", "pitID", "decimalLatitude", "decimalLongitude",
-                                            "coordinateUncertainty", "elevation", "collectDate", "soilSeries",  "soilFamily", 
-                                            "soilSubgroup", "soilGreatGroup", "soilSuborder",  "soilOrder", "pitDepth", "nrcsDescriptionID" )
+mgp_permegapit$plotID <- paste0(mgp_permegapit$siteID, "_mp")
+mgp_permegapit$plotType <- "mega"
+mgp_permegapit$soilSamplingMethod <- "soil pit"
+mgp_permegapit <- mgp_permegapit %>% select("domainID", "siteID", "plotID", "plotType", "nrcsDescriptionID", "decimalLatitude",
+                                            "decimalLongitude", "elevation", "collectDate", "soilSamplingMethod", "pitDepth",
+                                            "soilSeries", "soilFamily", "soilSubgroup", "soilGreatGroup", "soilSuborder",  "soilOrder" )
 
 mgp_perhorizon <- NEON.DP1.00096$mgp_perhorizon
-mgp_perhorizon <- mgp_perhorizon %>% select("domainID", "siteID", "pitNamedLocation", "pitID", "collectDate", "nrcsDescriptionID",
+mgp_perhorizon$plotID <- paste0(mgp_perhorizon$siteID, "_mp")
+mgp_perhorizon <- mgp_perhorizon %>% select("domainID", "siteID", "plotID",  "collectDate", "nrcsDescriptionID",
                                             "horizonID", "horizonName", "horizonTopDepth", "horizonBottomDepth", "remarks")
 
 mgp_perbulksample <- NEON.DP1.00096$mgp_perbulksample
-mgp_perbulksample <- mgp_perbulksample %>% select("horizonID", "bulkDensSampleType", "bulkDensCenterDepth", "bulkDensTopDepth",
-                                              "bulkDensBottomDepth", "bulkDensHorizonProportion", "bulkDensSampleType", 
-                                              "bulkDensExclCoarseFrag", "remarks")
+mgp_perbulksample <- mgp_perbulksample %>% select("horizonID", "bulkDensSampleType", "bulkDensSampleType", "bulkDensExclCoarseFrag", "remarks")
 
 names(mgp_perbiogeosample)
 
 mgp_perbiogeosample <- NEON.DP1.00096$mgp_perbiogeosample
-mgp_perbiogeosample <- mgp_perbiogeosample %>% select("horizonID", "coarseFrag2To5", "coarseFrag5To20", "sandTotal", "siltTotal", 
-                                                      "clayTotal", "carbonateClay", "clayFineContent", "siltFineContent", 
-                                                      "siltCoarseContent", "sandVeryFineContent", "sandFineContent", "sandMediumContent",
-                                                      "sandCoarseContent", "sandVeryCoarseContent", "carbonTot", "nitrogenTot", 
-                                                      "sulfurTot", "estimatedOC", "airDryOvenDry", "alMjelm", "caMjelm", "feMjelm", 
-                                                      "kMjelm", "mgMjelm", "mnMjelm", "naMjelm", "pMjelm", "siMjelm", "srMjelm", 
-                                                      "tiMjelm", "zrMjelm", "phCacl2", "phH2o", "ec12pre", "gypsumConc", "caco3Conc",
-                                                      "caNh4d", "kNh4d", "mgNh4d", "naNh4d", "cecdNh4", "alSatCecd33", "baseSumCecd10", 
-                                                      "bsesatCecd10", "ececCecd33", "alKcl", "feKcl", "mnKcl", "bSatx", "brSatx", "caSatx", 
-                                                      "clSatx", "co3Satx", "ecSatp", "flSatx", "waterSatx", "hco3Sx", "kSatx", "mgSatx", 
-                                                      "naSatx", "no2Satx", "no3Satx", "pSatx", "phSp", "resist", "so4Satx", 
-                                                      "labProjID", "remarks")
+
+mgp_particlesize <- mgp_perbiogeosample %>% select("horizonID", "coarseFrag2To5", "coarseFrag5To20", "sandTotal", "siltTotal", 
+                                                   "clayTotal", "carbonateClay", "clayFineContent", "siltFineContent", 
+                                                   "siltCoarseContent", "sandVeryFineContent", "sandFineContent", "sandMediumContent",
+                                                   "sandCoarseContent", "sandVeryCoarseContent")
+
+
+mgp_biogeochem <- mgp_perbiogeosample %>% select("horizonID", "airDryOvenDry", "carbonTot", "nitrogenTot", "sulfurTot", "estimatedOC", "gypsumConc", "caco3Conc", "caNh4d", "kNh4d",
+                                                 "phCacl2", "phH2o", "ec12pre", "mgNh4d", "naNh4d", "cecdNh4", "alSatCecd33", "baseSumCecd10", "bsesatCecd10", 
+                                                 "ececCecd33", "alKcl", "feKcl", "mnKcl", "bSatx", "brSatx", "caSatx", "clSatx", "co3Satx", "ecSatp", "flSatx", 
+                                                 "waterSatx", "hco3Sx", "kSatx", "mgSatx", "naSatx", "no2Satx", "no3Satx", "pSatx", "phSp", "so4Satx", "remarks")
+
+
+# Plot data, spc_perplot & mgp_permegapit are best replicated in the NASIS data
+names(spc_perplot) == names(mgp_permegapit)
+
+# Plot data, spc_perplot & mgp_permegapit 
+names(spc_perhorizon) == names(mgp_perhorizon)
+
+# Plot data, spc_bulkdensity & mgp_perbulksample 
+names(spc_bulkdensity) == names(mgp_perbulksample)
+colnames(spc_bulkdensity)[3] <- "bulkDen"
+colnames(mgp_perbulksample)[3]  <- "bulkDen"
+
+# Plot data, spc_bulkdensity & mgp_perbulksample 
+names(spc_particlesize) == names(mgp_particlesize)
+
+# Plot data, spc_bulkdensity & mgp_perbulksample 
+names(spc_biogeochem)  == names(mgp_biogeochem)
+colnames(spc_biogeochem)[2] <- "airDryOvenDryRatio"
+colnames(mgp_biogeochem)[2] <- "airDryOvenDryRatio"
+colnames(spc_biogeochem)[41] <- "remarks"
+
+#
+SPC_LAB <- left_join(spc_perhorizon, spc_bulkdensity, by = "horizonID")
+SPC_LAB <- left_join(SPC_LAB, spc_particlesize, by = "horizonID")
+SPC_LAB <- left_join(SPC_LAB, spc_biogeochem, by = "horizonID")
+
+#
+MGP_LAB <- left_join(mgp_perhorizon, mgp_perbulksample, by = "horizonID")
+MGP_LAB <- left_join(MGP_LAB, mgp_particlesize, by = "horizonID")
+MGP_LAB <- left_join(MGP_LAB, mgp_biogeochem, by = "horizonID")
+
+#
+colnames(SPC_LAB) == colnames(MGP_LAB)
+NEON_LAB <- rbind(SPC_LAB, MGP_LAB)
+
+# NEON_LAB includes horizon lab data merged to a common file.
+
