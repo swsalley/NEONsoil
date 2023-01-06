@@ -1,0 +1,65 @@
+# NEON soil morphology data from NASIS
+# Shawn W. Salley, 20230106, Shawn.Salley@usda.gov
+# NEON megapit n = 24, NEON distributed plots n = 971
+
+# Origin of "NEON_NASIS.RDS" large SoilProfileCollection file of NEON soil morphology data
+
+# You must have credentialed access to the NASIS Editor to use the soilDB::fetchNASIS() function
+
+# Set up ODBC Connection to the Local NASIS Database: 
+#   https://r-forge.r-project.org/scm/viewvc.php/*checkout*/docs/soilDB/setup_local_nasis.html?root=aqp
+
+# NASIS Query: "NSSC Pangaea Query" / "NEON-Projects, Sites, and Pedons" 
+# "NEON-Projects, Sites, and Pedons" : SQL query code
+#    FROM project
+#    inner JOIN  siteobs by default and siteobs.projectiidref is not null and project.projectiid=siteobs.projectiidref and project.uprojectid LIKE "%NEON%"
+#    inner JOIN  site by default 
+#    inner JOIN  pedon by default
+# "NEON-Projects, Sites, and Pedons" : Description
+#    Use % for wildcard
+#    Its complicated -
+#    Set Target Table = Site for the first run as a National query, Second run: then Project without Site and  Pedon checked,Third run: then Pedon checked
+#    Set Target tables - Pedon, Site, Project for Local query
+# Run query, add to selected set, confirm popultated NASIS tables. 
+
+# install packages (only first time)
+install.packages("RODBC", dep=TRUE) # stable version from CRAN + dependencies
+install.packages("soilDB", dep=TRUE) # stable version from CRAN + dependencies
+
+# load required libraries
+library(soilDB)
+
+# fetch all pedons from the selected set in local NASIS database
+NEON.NASIS <- fetchNASIS() 
+
+
+# NOTEs: some records are missing surface fragment cover
+# multiple horizontal datums present, consider using WGS84 coordinates (x_std, y_std)
+# NOTICE: multiple `labsampnum` values / horizons; see pedon IDs:
+# S2012CO123001,S2013VA043001,S2015TN155001,S2015VA187022,S2017CA039001,S2018AK185001,S2018AK185117,S2018AK185172
+# mixing dry colors ... [30 of 1592 horizons]
+# mixing moist colors ... [324 of 4530 horizons]
+# NOTE: some records are missing rock fragment volume
+# NOTE: all records are missing artifact volume
+# replacing missing lower horizon depths with top depth + 1cm ... [2 horizons]
+# -> QC: sites without pedons: 
+# 	Use `get('sites.missing.pedons', envir=get_soilDB_env())` for site record IDs (siteiid)
+# -> QC: duplicate pedons: 
+# 	Use `get('dup.pedon.ids', envir=get_soilDB_env())` for pedon record IDs (peiid)
+# -> QC: pedons missing bottom hz depths:
+# 	Use `get('missing.bottom.depths', envir=get_soilDB_env())` for pedon record IDs (peiid)
+# Warning messages:
+# 1: non-standard notation in Munsell value, use getClosestMunsellChip() 
+# 2: rock fragment volume >= 100%
+# phiid:
+# 6395770
+# 6475998
+# 6810183 
+# 3: Horizon top depths contain NA! Check depth logic with aqp::checkHzDepthLogic() 
+# 4: Horizon bottom depths contain NA! Check depth logic with aqp::checkHzDepthLogic() 
+# 5: In `hzidname<-`(`*tmp*`, value = "phiid") :
+#   horizon ID name (phiid) not unique. unique ID not changed.
+
+
+# NEON.NASIS contains all nasis site and pedon soil data 
+saveRDS(NEON.NASIS, "D:/r/NEON/NEON_NASIS.RDS")
