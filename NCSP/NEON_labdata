@@ -10,9 +10,9 @@ library(aqp)
 
 # these are from the 2022 release, rest of the data might be available in 2023
 
-NEON.DP1.10047 <- loadByProduct(dpID="DP1.10047.001", site="all", package="expanded", release="RELEASE-2022") # Distributed Plots
+NEON.DP1.10047 <- loadByProduct(dpID="DP1.10047.001", site="all", package="expanded") # Distributed Plots
 # Answer = Y
-NEON.DP1.00096 <- loadByProduct(dpID="DP1.00096.001", site="all", package="expanded", release="RELEASE-2022") # Mega Pits 
+NEON.DP1.00096 <- loadByProduct(dpID="DP1.00096.001", site="all", package="expanded") # Mega Pits 
 # Answer = Y
 
 
@@ -21,20 +21,20 @@ spc_perplot <- NEON.DP1.10047$spc_perplot
 spc_perplot <- spc_perplot %>% select("domainID", "siteID", "plotID",  "plotType", "nrcsDescriptionID", 
                                       "decimalLatitude", "decimalLongitude", "elevation", "collectDate", "soilSamplingMethod", 
                                       "pitDepth", "soilSeries",  "soilFamily", "soilSubgroup", "soilGreatGroup", "soilSuborder",  "soilOrder")
-
+#
 spc_perhorizon <- NEON.DP1.10047$spc_perhorizon
 spc_perhorizon <- spc_perhorizon %>% select("domainID", "siteID", "plotID", "collectDate", "nrcsDescriptionID",
                                             "horizonID", "horizonName", "horizonTopDepth", "horizonBottomDepth", "remarks")
-
+#
 spc_bulkdensity <- NEON.DP1.10047$spc_bulkdensity
 spc_bulkdensity <- spc_bulkdensity %>% select("horizonID", "bulkDensSampleType", "bulkDensSampleType",  "bulkDensOvenDry", "remarks")
-  
+#  
 spc_particlesize <- NEON.DP1.10047$spc_particlesize
 spc_particlesize <- spc_particlesize %>% select("horizonID", "coarseFrag2To5", "coarseFrag5To20", "sandTotal", "siltTotal", 
                                                 "clayTotal", "carbonateClay", "clayFineContent", "siltFineContent", 
                                                 "siltCoarseContent", "sandVeryFineContent", "sandFineContent", 
                                                 "sandMediumContent", "sandCoarseContent", "sandVeryCoarseContent")
-
+#
 spc_biogeochem <- NEON.DP1.10047$spc_biogeochem
 spc_biogeochem <- spc_biogeochem %>% select("horizonID", "airDryOvenDryRatio", "carbonTot", "nitrogenTot", "sulfurTot", "estimatedOC", "gypsumConc", "caco3Conc", "caNh4d", "kNh4d", 
                                             "phCacl2", "phH2o", "ec12pre", "mgNh4d", "naNh4d", "cecdNh4", "alSatCecd33", "baseSumCecd10", "bsesatCecd10", 
@@ -50,25 +50,21 @@ mgp_permegapit$soilSamplingMethod <- "soil pit"
 mgp_permegapit <- mgp_permegapit %>% select("domainID", "siteID", "plotID", "plotType", "nrcsDescriptionID", "decimalLatitude",
                                             "decimalLongitude", "elevation", "collectDate", "soilSamplingMethod", "pitDepth",
                                             "soilSeries", "soilFamily", "soilSubgroup", "soilGreatGroup", "soilSuborder",  "soilOrder" )
-
+#
 mgp_perhorizon <- NEON.DP1.00096$mgp_perhorizon
 mgp_perhorizon$plotID <- paste0(mgp_perhorizon$siteID, "_mp")
 mgp_perhorizon <- mgp_perhorizon %>% select("domainID", "siteID", "plotID",  "collectDate", "nrcsDescriptionID",
                                             "horizonID", "horizonName", "horizonTopDepth", "horizonBottomDepth", "remarks")
-
+#
 mgp_perbulksample <- NEON.DP1.00096$mgp_perbulksample
 mgp_perbulksample <- mgp_perbulksample %>% select("horizonID", "bulkDensSampleType", "bulkDensSampleType", "bulkDensExclCoarseFrag", "remarks")
-
-names(mgp_perbiogeosample)
-
+#
 mgp_perbiogeosample <- NEON.DP1.00096$mgp_perbiogeosample
-
 mgp_particlesize <- mgp_perbiogeosample %>% select("horizonID", "coarseFrag2To5", "coarseFrag5To20", "sandTotal", "siltTotal", 
                                                    "clayTotal", "carbonateClay", "clayFineContent", "siltFineContent", 
                                                    "siltCoarseContent", "sandVeryFineContent", "sandFineContent", "sandMediumContent",
                                                    "sandCoarseContent", "sandVeryCoarseContent")
-
-
+#
 mgp_biogeochem <- mgp_perbiogeosample %>% select("horizonID", "airDryOvenDry", "carbonTot", "nitrogenTot", "sulfurTot", "estimatedOC", "gypsumConc", "caco3Conc", "caNh4d", "kNh4d",
                                                  "phCacl2", "phH2o", "ec12pre", "mgNh4d", "naNh4d", "cecdNh4", "alSatCecd33", "baseSumCecd10", "bsesatCecd10", 
                                                  "ececCecd33", "alKcl", "feKcl", "mnKcl", "bSatx", "brSatx", "caSatx", "clSatx", "co3Satx", "ecSatp", "flSatx", 
@@ -96,18 +92,23 @@ colnames(mgp_biogeochem)[2] <- "airDryOvenDryRatio"
 colnames(spc_biogeochem)[41] <- "remarks"
 
 #
-SPC_LAB <- left_join(spc_perhorizon, spc_bulkdensity, by = "horizonID")
+SPC_LAB <- left_join(spc_perplot, spc_perhorizon, by = "plotID")
+SPC_LAB <- left_join(SPC_LAB, spc_bulkdensity, by = "horizonID")
 SPC_LAB <- left_join(SPC_LAB, spc_particlesize, by = "horizonID")
 SPC_LAB <- left_join(SPC_LAB, spc_biogeochem, by = "horizonID")
 
 #
-MGP_LAB <- left_join(mgp_perhorizon, mgp_perbulksample, by = "horizonID")
+MGP_LAB <- left_join(mgp_permegapit, mgp_perhorizon, by = "plotID")
+MGP_LAB <- left_join(MGP_LAB, mgp_perbulksample, by = "horizonID")
 MGP_LAB <- left_join(MGP_LAB, mgp_particlesize, by = "horizonID")
 MGP_LAB <- left_join(MGP_LAB, mgp_biogeochem, by = "horizonID")
 
 #
 colnames(SPC_LAB) == colnames(MGP_LAB)
 NEON_LAB <- rbind(SPC_LAB, MGP_LAB)
+#
+depths(NEON_LAB) <- plotID ~ horizonTopDepth + horizonBottomDepth
+#
 
-# NEON_LAB includes horizon lab data merged to a common file.
-
+saveRDS(NEON_LAB, "D:/r/NEON/NEON_Lab.RDS")
+NEON_LAB<- readRDS("D:/r/NEON/NEON_Lab.RDS")
