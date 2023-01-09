@@ -4,12 +4,12 @@
 
 # Origin of "NEON_NASIS.RDS" large SoilProfileCollection file of NEON soil morphology data
 
-# You must have credentialed access to the NASIS Editor to use the soilDB::fetchNASIS() function
+# You need access to the NASIS Editor and set up an ODBC connection for soilDB::fetchNASIS() to work. 
 
 # Set up ODBC Connection to the Local NASIS Database: 
 #   https://r-forge.r-project.org/scm/viewvc.php/*checkout*/docs/soilDB/setup_local_nasis.html?root=aqp
 
-# NASIS Query: "NSSC Pangaea Query" / "NEON-Projects, Sites, and Pedons" 
+# NASIS Query: "NSSC Pangaea Query" / "NEON-Projects, Sites, and Pedons" / (K. Godsey, 2018)
 # "NEON-Projects, Sites, and Pedons" : SQL query code
 #    FROM project
 #    inner JOIN  siteobs by default and siteobs.projectiidref is not null and project.projectiid=siteobs.projectiidref and project.uprojectid LIKE "%NEON%"
