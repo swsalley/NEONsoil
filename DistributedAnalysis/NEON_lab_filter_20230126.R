@@ -1,7 +1,8 @@
 
-# NEON soil laboratory data from NASIS
-# Shawn W. Salley, 20230106, Shawn.Salley@usda.gov
-# NEON megapit n = 24, NEON distributed plots n = 971
+# NEON soil laboratory data from neonUtilities
+# Shawn W. Salley, 20230127, Shawn.Salley@usda.gov
+# NEON megapit,  n = 47, 
+# NEON distributed plots,  n = 727
 
 library(neonUtilities) 
 library(dplyr)
@@ -16,7 +17,9 @@ NEON.DP1.10047 <- loadByProduct(dpID="DP1.10047.001", site="all", package="expan
 NEON.DP1.00096 <- loadByProduct(dpID="DP1.00096.001", site="all", package="expanded") # Mega Pits 
 # Answer = Y
 
+
 names(NEON.DP1.10047)
+names(NEON.DP1.00096)
 
 
 #  Distributed Plots SPC
@@ -24,8 +27,11 @@ spc_perplot <- NEON.DP1.10047$spc_perplot
 spc_perplot <- spc_perplot %>% select("domainID", "siteID", "plotID",  "plotType", "nrcsDescriptionID", 
                                       "decimalLatitude", "decimalLongitude", "elevation", "collectDate", "soilSamplingMethod", 
                                       "pitDepth", "soilSeries",  "soilFamily", "soilSubgroup", "soilGreatGroup", "soilSuborder",  "soilOrder")
-spc_perplot %>% filter(siteID == "TEAK")
 
+
+# check to see if NEON has uploaded the last site, TEAK
+
+spc_perplot %>% filter(siteID == "TEAK") # yes! now we can finish the NEON soil variability manuscript with all the NEON distributed soil data 
 
 #
 spc_perhorizon <- NEON.DP1.10047$spc_perhorizon
@@ -47,7 +53,11 @@ spc_biogeochem <- spc_biogeochem %>% select("horizonID", "airDryOvenDryRatio", "
                                             "ececCecd33", "alKcl", "feKcl", "mnKcl", "bSatx", "brSatx", "caSatx", "clSatx", "co3Satx", "ecSatp", "flSatx", 
                                             "waterSatx", "hco3Sx", "kSatx", "mgSatx", "naSatx", "no2Satx", "no3Satx", "pSatx", "phSp","so4Satx", "processingRemarks") 
 
+
 # Mega Pits MGP
+
+# the neon mega pit horizon ID's do not use the NRCS horizon codes. 
+# recommend NEON to update so relationship joins are easier
 
 mgp_permegapit <- NEON.DP1.00096$mgp_permegapit
 mgp_permegapit$plotID <- paste0(mgp_permegapit$siteID, "_mp")
@@ -58,10 +68,10 @@ mgp_perhorizon <- NEON.DP1.00096$mgp_perhorizon
 mgp_perhorizon$plotID <- paste0(mgp_perhorizon$siteID, "_mp")
 #
 mgp_perbulksample <- NEON.DP1.00096$mgp_perbulksample
-mgp_perbulksample <- mgp_perbulksample %>% filter(bulkDensSampleType == "Regular")
+mgp_perbulksample <- mgp_perbulksample %>% filter(bulkDensSampleType == "Regular") #use the regular, ask NEON what audit data actually are
 #
 mgp_perbiogeosample <- NEON.DP1.00096$mgp_perbiogeosample
-mgp_perbiogeosample <- mgp_perbiogeosample %>% filter(biogeoSampleType == "Regular")
+mgp_perbiogeosample <- mgp_perbiogeosample %>% filter(biogeoSampleType == "Regular") # use the regular, not audit
 
 # filter out TEAK
 
@@ -96,6 +106,8 @@ mgp_perhorizon %>% filter(siteID == "TEAK") %>% arrange(horizonTopDepth)
 mgp_perbulksample %>% filter(siteID == "TEAK") %>% arrange(bulkDensTopDepth)
 mgp_perbiogeosample %>% filter(siteID == "TEAK") %>% arrange(biogeoTopDepth)
 mgp_perbiogeosample %>% filter(horizonID == "17_TEAK_PIT1_C1") %>% arrange("biogeoTopDepth")
+mgp_perbiogeosample %>% filter(horizonID == "17_TEAK_PIT1_C1_19-43") %>% arrange("biogeoTopDepth")
+mgp_perbiogeosample %>% filter(horizonID == "17_TEAK_PIT1_C1_43-67") %>% arrange("biogeoTopDepth")
 #
 
 # RMNP # split 60 / 40 best to weighted average these data
@@ -195,6 +207,9 @@ colnames(SPC_LAB) == colnames(MGP_LAB)
 colnames(SPC_LAB)
 colnames(MGP_LAB)
 NEON_LAB <- rbind(SPC_LAB, MGP_LAB)
+#
+
+#
 write.csv(NEON_LAB, "D:/r/NEON/NEON_Lab.csv")
 #
 depths(NEON_LAB) <- plotID ~ horizonTopDepth + horizonBottomDepth
