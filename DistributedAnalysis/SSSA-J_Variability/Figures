@@ -1,0 +1,12 @@
+# Draft Manuscript for SSSA-J, 
+# Leveraging NEON network soils data to quantify soil variability
+# Dawn Browning, Shawn W. Salley, et al.
+# Figure # 2
+# Contact: Shawn.Salley@usda.gov, github.com/swsalley/NEONsoil/DistributedAnalysis
+
+# Load data from github, soil data from neonUtilities() and cleaned up for analysis
+#
+
+soil.all <- read.csv("D:/r/NEON/NEON_Lab_clean_20230127.csv") # n = 3633
+NEONsites <- unique(soil.all$siteID) # n = 47
+
