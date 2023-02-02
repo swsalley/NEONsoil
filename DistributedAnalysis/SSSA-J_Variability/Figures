@@ -1,12 +1,92 @@
-# Draft Manuscript for SSSA-J, 
-# Leveraging NEON network soils data to quantify soil variability
+# Draft Manuscript for SSSA-J, Leveraging NEON network soils data to quantify soil variability
 # Dawn Browning, Shawn W. Salley, et al.
-# Figure # 2
 # Contact: Shawn.Salley@usda.gov, github.com/swsalley/NEONsoil/DistributedAnalysis
 
-# Load data from github, soil data from neonUtilities() and cleaned up for analysis
+
+# This code will generate figure #2 and Figure #3 in the manuscript.
+
+
+# Libraries: dplyr, aqp, corrplot, reshape2, tidyr, vegan, viridis
+# NCSP function requires development version of AQP 
+
+remotes::install_github("ncss-tech/aqp", dependencies=FALSE, upgrade=FALSE, build=FALSE)
+
+x <- c("dplyr", "aqp", "corrplot")
+lapply(x, require, character.only = TRUE)
+
+# Load data from github, github.com/swsalley/NEONsoil/DistributedAnalysis
+# These data are from neonUtilities() and cleaned up for analysis
+
+#### Tidy Data for figures ####
+
+soildata.url <- "https://github.com/swsalley/NEONsoil/blob/master/DistributedAnalysis/SSSA-J_Variability/NEON_Lab_clean_20230127.csv?raw=true"
+NEON.lab <- read.csv(url(soildata.url))
+
+# unique NEON site names (loops)
+NEONsites <- unique(NEON.lab$siteID) # n = 47
+
+
+#### Figure 2 ####
+# Figure 2, distance correlation plots for each NEON site
+
+# set frame parameters 8 x 6
+par(mfrow=c(6,8))
+
+# loop through each site's NCSP and plot correlation data for each site
+
+for (i in 1:length(NEONsites)) {
+  soil.i <- NEON.lab[NEON.lab$siteID== NEONsites[i],]
+  depths(soil.i) <-plotID ~ horizonTopDepth + horizonBottomDepth 
+  # distance plot (NCSP)
+  dist <- aqp::NCSP(soil.i, vars=c("coarseFrag2To20", "sandTotal", "siltTotal","clayTotal", "carbonTot", 
+                                   "nitrogenTot", "sulfurTot", "cecdNh4", "phCacl2", "ec12pre"),
+                    k=.03, rescaleResult = T, returnDepthDistances=F)
+  max <- nrow(as.matrix(dist))
+  # correlation plot (corrplot)
+  corrplot(as.matrix(dist), is.corr = F, method = "color", col = viridis::viridis(50),
+           order="alphabet", col.lim = c(0, 1), 
+           type = "upper", tl.pos = "n",  cl.pos="n", mar = c(0.5, 0.2, 0.5, 0.8)) 
+  #
+  segments(c(max -0.52), c(0.5), c(max -0.52),  c(max +0.7), lwd=3.8, xpd=TRUE, col = adjustcolor("white", alpha = 0.7))
+  segments(c(max -0.42, max +0.51), c(0.5), c(max -0.42, max +0.51),  c(max +0.5), lwd=1.5, xpd=TRUE, col = "#440154FF")
+  segments(c(max -0.42), c(0.51, max +0.51), c(max +0.51), c(0.51, max +0.51), lwd=1, xpd=TRUE, col = "#440154FF")
+  mtext(NEONsites[i], side=1, line=2.5, at=5, cex=1.5) # text size depends on plot window dimensions
+  segments(max - 0.2, max +1.4, max +0.48, max +1.4, lwd=4, lend=2, xpd=TRUE, col = "#440154FF")
+}
+
+#### Figure 3 ####
+
+# Figure 3, Distance correlation plots for each NEON network (global) and visualized for each neon site
+depths(NEON.lab) <- plotID ~ horizonTopDepth + horizonBottomDepth  
+
+# Complete gloabal NCSP calculation first then plot correlations for each NEON site
+# this puts the distance calculation to the same scale and corrplots scale is for all 47 sites
+corr.dist <- aqp::NCSP(NEON.lab, vars=c("coarseFrag2To20", "sandTotal","siltTotal","clayTotal",
+                                        "carbonTot", "nitrogenTot", "sulfurTot", "cecdNh4", "phCacl2", "ec12pre"), 
+                       k=.03, rescaleResult = T, returnDepthDistances=F)
+
+# Subset distance values for each site and make new site specific matrix
+corr.dist.1 <- melt(as.matrix(corr.dist), varnames = c("row", "col"))
+corr.dist.1$site <- substr(corr.dist.1$row, start = 1, stop = 4)
+
+# loop through to make figures
+par(mfrow=c(6,8)) #figure this out next time.
+for (i in 1:length(NEONsites)) {
+  physical.i <- corr.dist.1[substr(corr.dist.1$row, start = 1, stop = 4) == NEONsites[i],]
+  physical.i <- physical.i[substr(physical.i$col, start = 1, stop = 4) == NEONsites[i],]
+  physical.i <- physical.i[order(physical.i$row), ]
+  
+  nams <- with(physical.i, unique(c(as.character(row), as.character(col))))
+  df1<- physical.i %>% spread(col, value, fill=0) %>% textshape::column_to_rownames("row")# %>% as.matrix
+  df1 <- as.matrix(df1[-1])
+  max <- nrow(as.matrix(df1))
+  corrplot(df1, is.corr = F, method = "color", order="alphabet", col.lim = c(0, 1), col = viridis::viridis(762),
+           type = "upper", tl.pos = "n", cl.pos="n", mar = c(0.5, 0.2, 0.5, 0.8)) 
+  segments(c(max -0.5), c(0.5), c(max -0.5),  c(max +0.7), lwd=3.8, xpd=TRUE, col = adjustcolor("white", alpha = 0.7))
+  # add thick black in place of the astrix 
+  segments(c(max -0.42, max +0.51), c(0.5), c(max -0.42, max +0.51),  c(max +0.5), lwd=1.5, xpd=TRUE, col = "#440154FF")
+  segments(c(max -0.42), c(0.51, max +0.51), c(max +0.51), c(0.51, max +0.51), lwd=1, xpd=TRUE, col = "#440154FF")
+  mtext(NEONsites[i], side=1, line=2.5, at=5, cex=1.5) # text size depends on plot window dimensions
+  segments(max - 0.2, max +1.4, max +0.48, max +1.4, lwd=4, lend=2, xpd=TRUE, col = "#440154FF")
+} 
 #
-
-soil.all <- read.csv("D:/r/NEON/NEON_Lab_clean_20230127.csv") # n = 3633
-NEONsites <- unique(soil.all$siteID) # n = 47
-
