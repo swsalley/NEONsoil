@@ -1,0 +1,21 @@
+#### profileInformationIndex, NEON Data  ####
+
+#
+soildata.url <- "https://github.com/swsalley/NEONsoil/blob/master/DistributedAnalysis/SSSA-J_Variability/NEON_Lab_clean_20230127.csv?raw=true"
+NEON.lab <- read.csv(url(soildata.url))
+depths(NEON.lab) <- plotID ~ horizonTopDepth + horizonBottomDepth  
+#
+i.sum.t <- profileInformationIndex(NEON.lab, vars = c('clayTotal'), method = 'sum', baseline = TRUE)
+i.mean.t <- profileInformationIndex(NEON.lab, vars = c('clayTotal'), method = 'mean', baseline = TRUE)
+i.sum.f <- profileInformationIndex(NEON.lab, vars = c('clayTotal'), method = 'sum', baseline = FALSE)
+i.mean.f <- profileInformationIndex(NEON.lab, vars = c('clayTotal'), method = 'mean', baseline = FALSE)
+#
+neon.info <- cbind(i.sum.t, i.mean.t, i.sum.f, i.mean.f) %>% data.frame
+#
+neon.info$plotID <- rownames(neon.info)
+neon.info$site <- substr(neon.info$plotID , start = 1, stop = 4)
+neon.info <- neon.info[,c(6,5,1:4)]
+rownames(neon.info) <- 1:774
+neon.info[,c(3,4,6)] <- round(neon.info[,c(3,4,6)],3)
+#
+head(neon.info)
