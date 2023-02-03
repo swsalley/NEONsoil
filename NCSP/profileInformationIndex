@@ -19,3 +19,4 @@ rownames(neon.info) <- 1:774
 neon.info[,c(3,4,6)] <- round(neon.info[,c(3,4,6)],3)
 #
 head(neon.info)
+write.csv(neon.info, "E:/Publications/NEON/R/Neon_info_index.csv")
